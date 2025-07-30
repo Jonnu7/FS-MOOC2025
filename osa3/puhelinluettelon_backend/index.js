@@ -10,6 +10,7 @@ morgan.token('body', (req) => req.method === 'POST' ? JSON.stringify(req.body) :
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'))
 
 const path = require('path')
+app.use(express.static('dist'))
 //app.use(express.static(path.resolve(__dirname, '../puhelinluettelon_frontend/dist')))
 
 let persons = [
@@ -106,9 +107,9 @@ app.get('/info', (req, res) => {
 
 /*
 app.get('*', (req, res) => {
-  res.sendFile(path.resolve(__dirname, '../puhelinluettelon_frontend/dist/index.html'))
+  res.sendFile(path.resolve(__dirname, './dist/index.html'))
 })
-  */
+*/
 
 const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
