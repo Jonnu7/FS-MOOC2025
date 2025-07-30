@@ -11,8 +11,18 @@ app.use(morgan(':method :url :status :res[content-length] - :response-time ms :b
 
 const path = require('path')
 app.use(express.static('dist'))
-//app.use(express.static(path.resolve(__dirname, '../puhelinluettelon_frontend/dist')))
+require('dotenv').config()
 
+
+const mongoose = require('mongoose')
+const url = process.env.MONGODB_URI
+mongoose.set('strictQuery', false)
+mongoose.connect(url)
+
+const Person = require('./models/person')
+
+/*
+// Muu backend
 let persons = [
   {
     id: 1,
@@ -35,6 +45,7 @@ let persons = [
     number: "39-23-6423122"
   }
 ]
+  */
 
 app.get('/', (req, res) => {
   res.send('<h1>Phonebook backend</h1>')
@@ -43,28 +54,38 @@ app.get('/', (req, res) => {
 
 // Palauttaa kaikki henkilöt
 app.get('/api/persons', (req, res) => {
-  res.json(persons)
-  console.log('GET request to /api/persons: ', persons)
+  Person.find({}).then(persons => {
+    res.json(persons)
+    console.log('GET request to /api/persons: ', persons)
+  })
 })
 
 // Palauttaa yhden henkilön id:n perusteella
 app.get('/api/persons/:id', (req, res) => {
-  const id = Number(req.params.id)
-  const person = persons.find(p => p.id === id)
-  if (person) {
-    res.json(person)
-  } else {
-    res.status(404).end()
-  }
-  console.log(`GET request to /api/persons/${id}: `, person || 'not found')
+  Person.findById(req.params.id)
+    .then(person => {
+      if (person) {
+        res.json(person)
+      } else {
+        res.status(404).end()
+      }
+      console.log(`GET request to /api/persons/${req.params.id}: `, person || 'not found')
+    })
+    .catch(error => {
+      res.status(400).send({ error: 'malformatted id' })
+    })
 })
 
 // Poista henkilö id:n perusteella
 app.delete('/api/persons/:id', (req, res) => {
-  const id = Number(req.params.id)
-  persons = persons.filter(p => p.id !== id)
-  res.status(204).end()
-  console.log(`DELETE request to /api/persons/${id}: `, person || 'not found')
+  Person.findByIdAndRemove(req.params.id)
+    .then(result => {
+      res.status(204).end()
+      console.log(`DELETE request to /api/persons/${req.params.id}: `, result || 'not found')
+    })
+    .catch(error => {
+      res.status(400).send({ error: 'malformatted id' })
+    })
 })
 
 // Lisää uusi henkilö
@@ -75,34 +96,25 @@ app.post('/api/persons', (req, res) => {
     console.log(`POST request failed: name or number missing: "${body.name}", "${body.number}"`)  
     return res.status(400).json({ error: 'name or number missing' })
   }
-  if (persons.find(p => p.name === body.name)) {
-    console.log(`POST request failed: name already exists: "${body.name}"`)
-    return res.status(400).json({ error: 'name must be unique' })
-  }
 
-  
+  // Tarkista onko nimi jo olemassa tietokannassa
+  Person.findOne({ name: body.name }).then(existing => {
+    if (existing) {
+      console.log(`POST request failed: name already exists: "${body.name}"`)
+      return res.status(400).json({ error: 'name must be unique' })
+    }
 
-  const person = {
-    id: Math.floor(Math.random() * 10000000),
-    name: body.name,
-    number: body.number
-  }
-  persons = persons.concat(person)
-  res.json(person)
-  //console.log('POST request to /api/persons: ', person)
-  console.log(`added person: ${person.name}, number: ${person.number}`)
-  console.log('Body:', body)
-})
+    const person = new Person({
+      name: body.name,
+      number: body.number
+    })
 
-app.get('/info', (req, res) => {
-  const count = persons.length
-  const date = new Date()
-  res.send(
-    `<div>
-      <p>Phonebook has info for ${count} people</p>
-      <p>${date}</p>
-    </div>`
-  )
+    person.save().then(savedPerson => {
+      res.json(savedPerson)
+      console.log(`added person: ${savedPerson.name}, number: ${savedPerson.number}`)
+      console.log('Body:', body)
+    })
+  })
 })
 
 /*
