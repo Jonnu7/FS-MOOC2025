@@ -83,9 +83,12 @@ const App = () => {
                 setNewNumber('')
             })
             .catch(error => {
+                showNotification(error.response?.data?.error || 'Failed to add person', 'error')
+                console.log(error.response?.data)
+                /*
                 showNotification('Failed to add person',
                   'error'
-                )
+                )*/
                 console.log('Add failed:', error)
             })
     }
