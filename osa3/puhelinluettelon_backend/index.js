@@ -52,16 +52,29 @@ app.get('/', (req, res) => {
   console.log('GET request to /')
 })
 
+app.get('/info', (req, res, next) => {
+  Person.countDocuments({})
+    .then(count => {
+      const date = new Date()
+      res.send(
+        `<p>Phonebook has info for ${count} people</p>
+         <p>${date}</p>`
+      )
+    })
+    .catch(error => next(error))
+})
+
 // Palauttaa kaikki henkilöt
-app.get('/api/persons', (req, res) => {
+app.get('/api/persons', (req, res, next) => {
   Person.find({}).then(persons => {
     res.json(persons)
     console.log('GET request to /api/persons: ', persons)
   })
+  .catch(error => next(error))
 })
 
 // Palauttaa yhden henkilön id:n perusteella
-app.get('/api/persons/:id', (req, res) => {
+app.get('/api/persons/:id', (req, res, next) => {
   Person.findById(req.params.id)
     .then(person => {
       if (person) {
@@ -71,25 +84,53 @@ app.get('/api/persons/:id', (req, res) => {
       }
       console.log(`GET request to /api/persons/${req.params.id}: `, person || 'not found')
     })
-    .catch(error => {
-      res.status(400).send({ error: 'malformatted id' })
-    })
+    //.catch(error => {
+      //res.status(400).send({ error: 'malformatted id' })
+    //})
+    .catch(error => next(error))
 })
 
 // Poista henkilö id:n perusteella
-app.delete('/api/persons/:id', (req, res) => {
+app.delete('/api/persons/:id', (req, res, next) => {
   Person.findByIdAndDelete(req.params.id) //findByIdAndRemove
     .then(result => {
       res.status(204).end()
       console.log(`DELETE request to /api/persons/${req.params.id}: `, result || 'not found')
     })
+    /*
     .catch(error => {
       res.status(400).send({ error: 'malformatted id' })
+    })*/
+   .catch(error => next(error))
+})
+
+//Put
+app.put('/api/persons/:id', (req, res, next) => {
+  const { name, number } = req.body
+
+  if (!name || !number) {
+    return res.status(400).json({ error: 'name or number missing' })
+  }
+
+  Person.findByIdAndUpdate(
+    req.params.id,
+    { name, number },
+    { new: true, runValidators: true, context: 'query' },
+    console.log(`PUT request to /api/persons/${req.params.id}: `, { name, number })
+  )
+    .then(updatedPerson => {
+      if (updatedPerson) {
+        res.json(updatedPerson)
+        console.log(`PUT request to /api/persons/${req.params.id}: `, updatedPerson)
+      } else {
+        res.status(404).end()
+      }
     })
+    .catch(error => next(error))
 })
 
 // Lisää uusi henkilö
-app.post('/api/persons', (req, res) => {
+app.post('/api/persons', (req, res, next) => {
   const body = req.body
 
   if (!body.name || !body.number) {
@@ -114,14 +155,31 @@ app.post('/api/persons', (req, res) => {
       console.log(`added person: ${savedPerson.name}, number: ${savedPerson.number}`)
       console.log('Body:', body)
     })
+    .catch(error => next(error))
   })
+  .catch(error => next(error))
 })
 
-/*
-app.get('*', (req, res) => {
-  res.sendFile(path.resolve(__dirname, './dist/index.html'))
-})
-*/
+
+// Olemattomien osoitteiden käsittely
+const unknownEndpoint = (req, res) => {
+  res.status(404).send({ error: 'unknown endpoint' })
+}
+app.use(unknownEndpoint)
+
+// Keskitetty virheidenkäsittelymiddleware
+const errorHandler = (error, req, res, next) => {
+  console.error(error.message)
+  if (error.name === 'CastError') {
+    return res.status(400).send({ error: 'malformatted id' })
+  }
+  if (error.name === 'ValidationError') {
+    return res.status(400).json({ error: error.message })
+  }
+  res.status(500).json({ error: 'internal server error' })
+}
+app.use(errorHandler)
+
 
 const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
