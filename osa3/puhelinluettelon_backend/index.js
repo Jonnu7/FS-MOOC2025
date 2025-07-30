@@ -70,7 +70,7 @@ app.get('/api/persons', (req, res, next) => {
     res.json(persons)
     console.log('GET request to /api/persons: ', persons)
   })
-  .catch(error => next(error))
+    .catch(error => next(error))
 })
 
 // Palauttaa yhden henkilön id:n perusteella
@@ -85,7 +85,7 @@ app.get('/api/persons/:id', (req, res, next) => {
       console.log(`GET request to /api/persons/${req.params.id}: `, person || 'not found')
     })
     //.catch(error => {
-      //res.status(400).send({ error: 'malformatted id' })
+    //res.status(400).send({ error: 'malformatted id' })
     //})
     .catch(error => next(error))
 })
@@ -101,7 +101,7 @@ app.delete('/api/persons/:id', (req, res, next) => {
     .catch(error => {
       res.status(400).send({ error: 'malformatted id' })
     })*/
-   .catch(error => next(error))
+    .catch(error => next(error))
 })
 
 //Put
@@ -134,7 +134,7 @@ app.post('/api/persons', (req, res, next) => {
   const body = req.body
 
   if (!body.name || !body.number) {
-    console.log(`POST request failed: name or number missing: "${body.name}", "${body.number}"`)  
+    console.log(`POST request failed: name or number missing: "${body.name}", "${body.number}"`)
     return res.status(400).json({ error: 'name or number missing' })
   }
 
@@ -155,9 +155,9 @@ app.post('/api/persons', (req, res, next) => {
       console.log(`added person: ${savedPerson.name}, number: ${savedPerson.number}`)
       console.log('Body:', body)
     })
-    .catch(error => next(error))
+      .catch(error => next(error))
   })
-  .catch(error => next(error))
+    .catch(error => next(error))
 })
 
 

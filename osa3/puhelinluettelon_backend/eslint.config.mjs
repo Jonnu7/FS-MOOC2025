@@ -27,6 +27,6 @@ export default [
     },
   },
   {
-    ignores: ['dist/**'],
+    ignores: ['dist/**', 'mongo.js', 'index_local.js'],
   },
 ]
