@@ -11,7 +11,7 @@ app.use(express.json())
 morgan.token('body', (req) => req.method === 'POST' ? JSON.stringify(req.body) : '')
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'))
 
-const path = require('path')
+//const path = require('path')
 app.use(express.static('dist'))
 require('dotenv').config()
 //app.use(express.static(path.resolve(__dirname, '../puhelinluettelon_frontend/dist')))
@@ -37,7 +37,7 @@ const url = process.env.MONGODB_URI
 mongoose.set('strictQuery', false)
 mongoose.connect(url)
 
-const Person = require('./models/person')
+//const Person = require('./models/person')
 
 // Muu backend
 let persons = [
@@ -88,6 +88,7 @@ app.get('/api/persons/:id', (req, res) => {
 
 // Poista henkilö id:n perusteella
 app.delete('/api/persons/:id', (req, res) => {
+  const person = ''
   const id = Number(req.params.id)
   persons = persons.filter(p => p.id !== id)
   res.status(204).end()

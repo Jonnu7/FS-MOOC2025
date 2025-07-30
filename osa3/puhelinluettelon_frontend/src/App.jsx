@@ -61,7 +61,7 @@ const App = () => {
                     })
                     .catch(error => {
                         showNotification(
-                            `Error: "${existingPerson.name}" has been removed from server during update or unexpected error occurred`,
+                            `Error: "${existingPerson.name}" has been removed from server during update or unexpected error occurred: ${error.message}`,
                             'error'
                         )
                         setPersons(persons.filter(p => p.id !== existingPerson.id))
@@ -116,7 +116,7 @@ const App = () => {
                 })
                 .catch(error => {
                     showNotification(
-                        `Error: "${name}" has already been removed from server`,
+                        `Error: "${name}" has already been removed from server: ${error.message}`,
                         'error'
                     )
                     setPersons(persons.filter(person => person.id !== id))

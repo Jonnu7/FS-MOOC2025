@@ -9,7 +9,7 @@ app.use(express.json())
 morgan.token('body', (req) => req.method === 'POST' ? JSON.stringify(req.body) : '')
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'))
 
-const path = require('path')
+//const path = require('path')
 app.use(express.static('dist'))
 require('dotenv').config()
 
@@ -168,7 +168,7 @@ const unknownEndpoint = (req, res) => {
 app.use(unknownEndpoint)
 
 // Keskitetty virheidenkäsittelymiddleware
-const errorHandler = (error, req, res, next) => {
+const errorHandler = (error, req, res) => {
   console.error(error.message)
   if (error.name === 'CastError') {
     return res.status(400).send({ error: 'malformatted id' })
