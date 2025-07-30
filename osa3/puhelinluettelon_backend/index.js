@@ -78,7 +78,7 @@ app.get('/api/persons/:id', (req, res) => {
 
 // Poista henkilö id:n perusteella
 app.delete('/api/persons/:id', (req, res) => {
-  Person.findByIdAndRemove(req.params.id)
+  Person.findByIdAndDelete(req.params.id) //findByIdAndRemove
     .then(result => {
       res.status(204).end()
       console.log(`DELETE request to /api/persons/${req.params.id}: `, result || 'not found')
