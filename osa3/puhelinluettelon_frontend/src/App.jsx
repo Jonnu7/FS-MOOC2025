@@ -41,8 +41,8 @@ const App = () => {
         event.preventDefault()
         const existingPerson = persons.find(person => person.name === newName)
         if (existingPerson) {
-            if (window.confirm(
-                console.log(`Person with name "${newName}" already exists.`),
+            console.log(`Person with name "${newName}" already exists.`)
+            if (window.confirm(                
                 `${newName} is already added to phonebook, replace the old number with a new one?`
             )) {
                 const updatedPerson = { ...existingPerson, number: newNumber }
